@@ -5,7 +5,6 @@ RED='\e[31m'
 GREEN='\e[32m'
 YELLOW='\e[33m'
 BLUE='\e[34m'
-MAGENTA='\e[35m'
 CYAN='\e[36m'
 RESET='\e[0m'
 
@@ -20,18 +19,15 @@ BOX_CORNER_BR="╝"
 # Function to draw a box
 draw_box() {
     local width="$1"
-    local text="$2"
-    local color="$3"
-    local padding=2
-
-    # Top border
-    echo -e "${color}${BOX_CORNER_TL}$(printf "%0.s${BOX_HORIZONTAL}" $(seq 1 $((width-2))))${BOX_CORNER_TR}${RESET}"
-
-    # Text line
-    echo -e "${color}${BOX_VERTICAL}${RESET} $(echo -e "${text}" | sed -e :a -e "s/^.\{1,$((width-4))\}$/ & /;ta") ${color}${BOX_VERTICAL}${RESET}"
-
-    # Bottom border
-    echo -e "${color}${BOX_CORNER_BL}$(printf "%0.s${BOX_HORIZONTAL}" $(seq 1 $((width-2))))${BOX_CORNER_BR}${RESET}"
+    shift
+    local color="$1"
+    shift
+    
+    echo -e "${color}${BOX_CORNER_TL}$(printf "%0.s${BOX_HORIZONTAL}" $(seq 1 $((width - 2))))${BOX_CORNER_TR}${RESET}"
+    for line in "$@"; do
+        printf "${color}${BOX_VERTICAL} %-*s ${BOX_VERTICAL}${RESET}\n" $((width - 4)) "$line"
+    done
+    echo -e "${color}${BOX_CORNER_BL}$(printf "%0.s${BOX_HORIZONTAL}" $(seq 1 $((width - 2))))${BOX_CORNER_BR}${RESET}"
 }
 
 # ASCII Art
@@ -44,12 +40,9 @@ cat << "EOF"
  | |,| \__., > '  < | |, _| |__/ | | | | | | \__.  
  \__/ '.__.'[__]`\_]\__/|________|[___||__]'.___.' 
                [[  @b1kr3m   ]]
-                                               
 EOF
-echo -e "${RESET}"
 
 # Encryption Functions
-
 aes_encrypt() {
     echo -n "$1" | openssl enc -aes-256-cbc -salt -pbkdf2 -a -pass pass:yoursecurepassword
 }
@@ -72,8 +65,7 @@ blowfish_encrypt() {
 }
 
 # Algorithm selection
-draw_box 40 "${GREEN}===== Algorithms =====" "${GREEN}"
-draw_box 40 "${YELLOW}1. AES\n${YELLOW}2. DES\n${YELLOW}3. RSA\n${YELLOW}4. Blowfish" "${YELLOW}"
+draw_box 40 "${GREEN}" "===== Algorithms =====" "${YELLOW}" "1. AES" "2. DES" "3. RSA" "4. Blowfish"
 read -p "$(echo -e "${BLUE}Choose algorithm (1-4): ${RESET}")" algo
 
 case $algo in
@@ -82,31 +74,21 @@ case $algo in
     3) algorithm="rsa";;
     4) algorithm="blowfish";;
     *)
-        draw_box 40 "${RED}Invalid algorithm!${RESET}" "${RED}"
+        draw_box 40 "${RED}" "Invalid algorithm!"
         exit 1
         ;;
 esac
 
 # Text input
-draw_box 40 "${BLUE}Enter text to encrypt: ${RESET}" "${BLUE}"
+draw_box 40 "${BLUE}" "Enter text to encrypt:"
 read -p "$(echo -e "${BLUE}>> ${RESET}")" input_text
 
 # Perform encryption
 case $algorithm in
-    "aes")
-        encrypted_text=$(aes_encrypt "$input_text")
-        ;;
-    "des")
-        encrypted_text=$(des_encrypt "$input_text")
-        ;;
-    "rsa")
-        encrypted_text=$(rsa_encrypt "$input_text")
-        ;;
-    "blowfish")
-        encrypted_text=$(blowfish_encrypt "$input_text")
-        ;;
+    "aes") encrypted_text=$(aes_encrypt "$input_text") ;;
+    "des") encrypted_text=$(des_encrypt "$input_text") ;;
+    "rsa") encrypted_text=$(rsa_encrypt "$input_text") ;;
+    "blowfish") encrypted_text=$(blowfish_encrypt "$input_text") ;;
 esac
 
-# Display encrypted text
-draw_box 40 "${GREEN}Encrypted Text:${RESET}" "${GREEN}"
-echo -e "${CYAN}$encrypted_text${RESET}"
+draw_box 40 "${GREEN}" "Encrypted Text:" "${CYAN}" "$encrypted_text"

@@ -39,7 +39,9 @@ cat << "EOF"
  | | / /__\\[ \ [  ]| |   |  _| _ [ `.-. | / /'`\] 
  | |,| \__., > '  < | |, _| |__/ | | | | | | \__.  
  \__/ '.__.'[__]`\_]\__/|________|[___||__]'.___.' 
+ 
                [[  @b1kr3m   ]]
+               
 EOF
 
 # Encryption Functions
@@ -73,7 +75,12 @@ blowfish_encrypt() {
 }
 
 # Algorithm selection
-draw_box 40 "${GREEN}" "===== Algorithms =====" "${YELLOW}" "1. AES" "2. DES" "3. RSA" "4. Blowfish"
+# draw_box 40 "${GREEN}" "===== Algorithms =====" "${YELLOW}" "1. AES" "2. DES" "3. RSA" "4. Blowfish"
+draw_box 40 "${GREEN}" "===== Algorithms =====" \
+          "${RED}1. AES${RESET}" \
+          "${RED}2. DES${RESET}" \
+          "${RED}3. RSA${RESET}" \
+          "${RED}4. Blowfish${RESET}"
 read -p "$(echo -e "${BLUE}Choose algorithm (1-4): ${RESET}")" algo
 
 case $algo in

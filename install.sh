@@ -47,7 +47,7 @@ clone_repository() {
 
 # Function to check if textenc.sh exists
 check_textenc_sh() {
-  if [[ ! -f "textenc.sh" ]]; then
+  if [[ ! -f "$REPO_DIR/textenc.sh" ]]; then
     error_exit "textenc.sh not found in the repository!"
   fi
 }
@@ -55,14 +55,14 @@ check_textenc_sh() {
 # Function to set necessary permissions
 set_permissions() {
   echo "Setting permissions..."
-  chmod +x textenc.sh || error_exit "Failed to set executable permissions"
+  chmod +x "$REPO_DIR/textenc.sh" || error_exit "Failed to set executable permissions"
 }
 
 # Function to install the script globally in ~/.local/bin
 install_script() {
   echo "Installing $EXECUTABLE_NAME..."
   mkdir -p "$INSTALL_DIR" || error_exit "Failed to create $INSTALL_DIR"
-  cp textenc.sh "$INSTALL_DIR/$EXECUTABLE_NAME" || error_exit "Failed to copy script to $INSTALL_DIR"
+  cp "$REPO_DIR/textenc.sh" "$INSTALL_DIR/$EXECUTABLE_NAME" || error_exit "Failed to copy script to $INSTALL_DIR"
   chmod +x "$INSTALL_DIR/$EXECUTABLE_NAME" || error_exit "Failed to set executable permissions"
 }
 
@@ -76,18 +76,6 @@ update_path() {
   fi
 }
 
-# Function to create logs directory
-create_logs_dir() {
-  echo "Creating logs directory..."
-  mkdir -p "$REPO_DIR/logs" || error_exit "Failed to create logs directory"
-}
-
-# Function to clean up
-cleanup() {
-  echo "Cleaning up..."
-  rm -rf "$REPO_DIR" || error_exit "Failed to remove $REPO_DIR"
-}
-
 # Main function to execute installation steps
 main() {
   echo "Starting installation of $EXECUTABLE_NAME..."
@@ -95,13 +83,10 @@ main() {
   clone_repository
   check_textenc_sh
   set_permissions
-  create_logs_dir
   install_script
   update_path
-  cleanup
   success_msg "Installation complete. Run '$EXECUTABLE_NAME' from anywhere to start."
 }
 
 # Execute the main function
 main
-

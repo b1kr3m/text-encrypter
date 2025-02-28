@@ -25,7 +25,7 @@ draw_box() {
     
     echo -e "${color}${BOX_CORNER_TL}$(printf "%0.s${BOX_HORIZONTAL}" $(seq 1 $((width - 2))))${BOX_CORNER_TR}${RESET}"
     for line in "$@"; do
-        printf "${color}${BOX_VERTICAL} %-*s ${BOX_VERTICAL}${RESET}\n" $((width - 4)) "$line"
+        printf "${color}${BOX_VERTICAL} %-*s ${color}${BOX_VERTICAL}${RESET}\n" $((width - 4)) "$line"
     done
     echo -e "${color}${BOX_CORNER_BL}$(printf "%0.s${BOX_HORIZONTAL}" $(seq 1 $((width - 2))))${BOX_CORNER_BR}${RESET}"
 }
@@ -44,24 +44,32 @@ EOF
 
 # Encryption Functions
 aes_encrypt() {
-    echo -n "$1" | openssl enc -aes-256-cbc -salt -pbkdf2 -a -pass pass:yoursecurepassword
+    local text="$1"
+    echo -n "$text" | openssl enc -aes-256-cbc -salt -pbkdf2 -a
 }
 
 des_encrypt() {
-    echo -n "$1" | openssl enc -des-cbc -salt -pbkdf2 -a -pass pass:yoursecurepassword
+    local text="$1"
+    echo -n "$text" | openssl enc -des-cbc -salt -pbkdf2 -a 2>/dev/null
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}DES encryption failed. DES is not supported by your OpenSSL version.${RESET}"
+        exit 1
+    fi
 }
 
 rsa_encrypt() {
+    local text="$1"
     if [[ ! -f private.pem || ! -f public.pem ]]; then
         openssl genpkey -algorithm RSA -out private.pem
         openssl rsa -pubout -in private.pem -out public.pem
         echo -e "${GREEN}RSA keys generated: private.pem, public.pem${RESET}"
     fi
-    echo -n "$1" | openssl pkeyutl -encrypt -pubin -inkey public.pem | base64
+    echo -n "$text" | openssl pkeyutl -encrypt -pubin -inkey public.pem | base64
 }
 
 blowfish_encrypt() {
-    echo -n "$1" | openssl enc -bf-cbc -salt -pbkdf2 -a -pass pass:yoursecurepassword
+    local text="$1"
+    echo -n "$text" | openssl enc -bf-cbc -salt -pbkdf2 -a
 }
 
 # Algorithm selection
@@ -91,4 +99,10 @@ case $algorithm in
     "blowfish") encrypted_text=$(blowfish_encrypt "$input_text") ;;
 esac
 
-draw_box 40 "${GREEN}" "Encrypted Text:" "${CYAN}" "$encrypted_text"
+# Display encrypted text
+if [ -n "$encrypted_text" ]; then
+    echo -e "${GREEN}Encrypted Text:${RESET}"
+    echo -e "${CYAN}$encrypted_text${RESET}"
+else
+    draw_box 40 "${RED}" "Encryption failed!"
+fi

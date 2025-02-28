@@ -2,6 +2,9 @@
 
 # Screenshot
 
+![image](https://github.com/user-attachments/assets/05d7a5a1-19de-4a0c-8623-bb60c4c5b815)
+
+
 
 A simple and efficient Bash-based encryption tool that supports multiple encryption methods to securely encrypt your text data.
 

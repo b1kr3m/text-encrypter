@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Initialize paths
-LOG_FILE="logs/encryption.log"
-
 # Colors
 RED='\e[31m'
 GREEN='\e[32m'
@@ -46,40 +43,32 @@ cat << "EOF"
  | | / /__\\[ \ [  ]| |   |  _| _ [ `.-. | / /'`\] 
  | |,| \__., > '  < | |, _| |__/ | | | | | | \__.  
  \__/ '.__.'[__]`\_]\__/|________|[___||__]'.___.' 
+               [[  @b1kr3m   ]]
                                                
 EOF
 echo -e "${RESET}"
 
 # Encryption Functions
 
-# AES Encryption
 aes_encrypt() {
-    local text="$1"
-    echo -n "$text" | openssl enc -aes-256-cbc -salt -pbkdf2 -a
+    echo -n "$1" | openssl enc -aes-256-cbc -salt -pbkdf2 -a -pass pass:yoursecurepassword
 }
 
-# DES Encryption
 des_encrypt() {
-    local text="$1"
-    echo -n "$text" | openssl enc -des-cbc -salt -a
+    echo -n "$1" | openssl enc -des-cbc -salt -pbkdf2 -a -pass pass:yoursecurepassword
 }
 
-# RSA Encryption
 rsa_encrypt() {
-    local text="$1"
-    # Generate RSA keys if they don't exist
     if [[ ! -f private.pem || ! -f public.pem ]]; then
         openssl genpkey -algorithm RSA -out private.pem
         openssl rsa -pubout -in private.pem -out public.pem
         echo -e "${GREEN}RSA keys generated: private.pem, public.pem${RESET}"
     fi
-    echo -n "$text" | openssl pkeyutl -encrypt -pubin -inkey public.pem | base64
+    echo -n "$1" | openssl pkeyutl -encrypt -pubin -inkey public.pem | base64
 }
 
-# Blowfish Encryption
 blowfish_encrypt() {
-    local text="$1"
-    echo -n "$text" | openssl enc -bf-cbc -salt -a
+    echo -n "$1" | openssl enc -bf-cbc -salt -pbkdf2 -a -pass pass:yoursecurepassword
 }
 
 # Algorithm selection
@@ -121,6 +110,3 @@ esac
 # Display encrypted text
 draw_box 40 "${GREEN}Encrypted Text:${RESET}" "${GREEN}"
 echo -e "${CYAN}$encrypted_text${RESET}"
-
-# Logging
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] Algorithm=$algorithm Input=\"${input_text:0:10}...\" Encrypted=\"${encrypted_text:0:10}...\"" >> "$LOG_FILE"
